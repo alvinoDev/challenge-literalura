@@ -1,5 +1,8 @@
 package com.alvinodev.challenge_literalura.principal;
 
+import com.alvinodev.challenge_literalura.dto.ApiResponseDTO;
+import com.alvinodev.challenge_literalura.dto.BookDataDTO;
+import com.alvinodev.challenge_literalura.model.Book;
 import com.alvinodev.challenge_literalura.service.ApiConsumer;
 import com.alvinodev.challenge_literalura.service.DataConverter;
 
@@ -58,7 +61,28 @@ public class Menu {
         }
     }
 
-    private void searchBookByTitle() { }
+    private BookDataDTO getBookData(String titleBook) {
+        ApiResponseDTO data = dataConverter.getData(jsonResp, ApiResponseDTO.class);
+        return data.bookDataList().stream()
+                .filter(b -> b.title().toUpperCase().contains(titleBook.toUpperCase()))
+                .findFirst().orElse(null);
+    }
+
+    private void searchBookByTitle() {
+        System.out.printf("Ingrese el titulo del libro: ");
+        String title = keyboardInput.nextLine();
+        jsonResp = apiConsumer.getData(URL_BASE + "?search=" + title.replace(" ", "+"));
+        BookDataDTO data = getBookData(title);
+
+        if(data != null) {
+            // Transformamos el DTO a nuestro Modelo 'Book'
+            Book book = new Book(data);
+            System.out.println(book);
+        } else {
+            System.out.println("Libro no encontrado.");
+        }
+    }
+
     private void listRegisteredBooks() { }
     private void listRegisteredAuthors() { }
     private void listLivingAuthorsByYear() { }
