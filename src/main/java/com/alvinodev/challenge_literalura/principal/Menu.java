@@ -100,7 +100,43 @@ public class Menu {
         }
     }
 
-    private void listRegisteredBooks() { }
+    //    private void listRegisteredBooks() {
+    //        var books = repository.findAll();
+    //
+    //        if (books.isEmpty()) {
+    //            System.out.println("No hay libros registrados aún.");
+    //        } else {
+    //            System.out.println("\n--- LISTA DE LIBROS REGISTRADOS ---");
+    //            // Usamos el formato toString() de la entidad Book
+    //            books.forEach(System.out::println);
+    //        }
+    //    }
+
+    private void listRegisteredBooks() {
+        var books = repository.findAll();
+
+        if (books.isEmpty()) {
+            System.out.println("\n[!] No hay libros registrados en la base de datos.");
+        } else {
+            System.out.println("\n" + "─".repeat(90));
+            System.out.println("                              LISTA DE LIBROS REGISTRADOS");
+            System.out.println("─".repeat(90));
+            System.out.printf("%-3s │ %-40s │ %-30s │ %-10s%n", "Nº", "TÍTULO", "AUTOR", "IDIOMA");
+            System.out.println("-".repeat(90));
+
+            // books.forEach(b -> System.out.printf("%-40.40s │ %-30.30s │ %-10s%n", b.getTitle(), b.getAuthor(), b.getLanguage()));
+            // System.out.println("─".repeat(84) + "\n");
+            for (int i = 0; i < books.size(); i++) {
+                var b = books.get(i);
+                System.out.printf("[%d] │ %-40.40s │ %-30.30s │ %-10s%n", (i + 1), b.getTitle(), b.getAuthor(), b.getLanguage());
+            }
+
+            System.out.println("─".repeat(90));
+            System.out.printf("TOTAL DE LIBROS: %d%n", books.size());
+            System.out.println("─".repeat(90) + "\n");
+        }
+    }
+
     private void listRegisteredAuthors() { }
     private void listLivingAuthorsByYear() { }
     private void listBooksByLanguage() { }
