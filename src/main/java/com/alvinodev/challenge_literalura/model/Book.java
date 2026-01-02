@@ -1,11 +1,18 @@
 package com.alvinodev.challenge_literalura.model;
 
 import com.alvinodev.challenge_literalura.dto.BookDataDTO;
+import jakarta.persistence.*;
 
 import java.util.stream.Collectors;
 
+@Entity
+@Table(name = "books")
 public class Book {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(unique = true)
     private String title;
     private String author;
     private String language;

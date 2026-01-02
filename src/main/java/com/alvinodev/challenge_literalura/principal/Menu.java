@@ -3,6 +3,7 @@ package com.alvinodev.challenge_literalura.principal;
 import com.alvinodev.challenge_literalura.dto.ApiResponseDTO;
 import com.alvinodev.challenge_literalura.dto.BookDataDTO;
 import com.alvinodev.challenge_literalura.model.Book;
+import com.alvinodev.challenge_literalura.repository.BookRepository;
 import com.alvinodev.challenge_literalura.service.ApiConsumer;
 import com.alvinodev.challenge_literalura.service.DataConverter;
 
@@ -14,6 +15,11 @@ public class Menu {
     private ApiConsumer apiConsumer = new ApiConsumer();
     private DataConverter dataConverter = new DataConverter();
     private String jsonResp;
+
+    private BookRepository repository;
+    public Menu(BookRepository repository) {
+        this.repository = repository;
+    }
 
     public void displayMenu() {
         var option = -1;
@@ -71,15 +77,26 @@ public class Menu {
     private void searchBookByTitle() {
         System.out.printf("Ingrese el titulo del libro: ");
         String title = keyboardInput.nextLine();
-        jsonResp = apiConsumer.getData(URL_BASE + "?search=" + title.replace(" ", "+"));
-        BookDataDTO data = getBookData(title);
 
-        if(data != null) {
-            // Transformamos el DTO a nuestro Modelo 'Book'
-            Book book = new Book(data);
-            System.out.println(book);
+        // Verificar si ya existe en la BD para no consumir la API innecesariamente
+        var bookOptional = repository.findByTitleContainsIgnoreCase(title);
+        if(bookOptional.isPresent()) {
+            System.out.println("\n[!] El libro ya se encuentra registrado en la base de datos:");
+            System.out.println(bookOptional.get());
         } else {
-            System.out.println("Libro no encontrado.");
+            // Si no existe, buscamos en la API
+            jsonResp = apiConsumer.getData(URL_BASE + "?search=" + title.replace(" ", "+"));
+            BookDataDTO data = getBookData(title);
+
+            if (data != null) {
+                // Transformamos el DTO a nuestro Modelo 'Book'
+                Book book = new Book(data);
+                repository.save(book); // Registro en la BD (MySQL)
+                System.out.println("\n[+] Libro registrado con éxito:");
+                System.out.println(book);
+            } else {
+                System.out.println("Libro no encontrado.");
+            }
         }
     }
 
