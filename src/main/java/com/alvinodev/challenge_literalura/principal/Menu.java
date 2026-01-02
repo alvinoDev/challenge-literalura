@@ -1,8 +1,11 @@
 package com.alvinodev.challenge_literalura.principal;
 
 import com.alvinodev.challenge_literalura.dto.ApiResponseDTO;
+import com.alvinodev.challenge_literalura.dto.AuthorDataDTO;
 import com.alvinodev.challenge_literalura.dto.BookDataDTO;
+import com.alvinodev.challenge_literalura.model.Author;
 import com.alvinodev.challenge_literalura.model.Book;
+import com.alvinodev.challenge_literalura.repository.AuthorRepository;
 import com.alvinodev.challenge_literalura.repository.BookRepository;
 import com.alvinodev.challenge_literalura.service.ApiConsumer;
 import com.alvinodev.challenge_literalura.service.DataConverter;
@@ -16,9 +19,11 @@ public class Menu {
     private DataConverter dataConverter = new DataConverter();
     private String jsonResp;
 
-    private BookRepository repository;
-    public Menu(BookRepository repository) {
-        this.repository = repository;
+    private BookRepository bookRepository;
+    private AuthorRepository authorRepository;
+    public Menu(BookRepository bookRepository, AuthorRepository authorRepository) {
+        this.bookRepository = bookRepository;
+        this.authorRepository = authorRepository;
     }
 
     public void displayMenu() {
@@ -79,7 +84,7 @@ public class Menu {
         String title = keyboardInput.nextLine();
 
         // Verificar si ya existe en la BD para no consumir la API innecesariamente
-        var bookOptional = repository.findByTitleContainsIgnoreCase(title);
+        var bookOptional = bookRepository.findByTitleContainsIgnoreCase(title);
         if(bookOptional.isPresent()) {
             System.out.println("\n[!] El libro ya se encuentra registrado en la base de datos:");
             System.out.println(bookOptional.get());
@@ -89,10 +94,22 @@ public class Menu {
             BookDataDTO data = getBookData(title);
 
             if (data != null) {
+                // Extraemos los datos del autor desde el DTO
+                AuthorDataDTO authorDTO = data.author().get(0);
+                // Buscamos si el autor ya existe en nuestra BD para no duplicarlo
+                Author author = authorRepository.findByNameContainsIgnoreCase(authorDTO.name())
+                        .orElseGet(() -> {
+                            // Si no existe, lo creamos Y LO GUARDAMOS explícitamente
+                            Author newAuthor = new Author(authorDTO);
+                            return authorRepository.save(newAuthor);
+                        });
+
                 // Transformamos el DTO a nuestro Modelo 'Book'
                 Book book = new Book(data);
-                repository.save(book); // Registro en la BD (MySQL)
-                System.out.println("\n[+] Libro registrado con éxito:");
+                book.setAuthor(author); // Vincula el autor al libro
+
+                bookRepository.save(book); // Registro en la BD (MySQL)
+                System.out.println("\n[+] Libro y Autor registrado con éxito:");
                 System.out.println(book);
             } else {
                 System.out.println("Libro no encontrado.");
@@ -100,20 +117,8 @@ public class Menu {
         }
     }
 
-    //    private void listRegisteredBooks() {
-    //        var books = repository.findAll();
-    //
-    //        if (books.isEmpty()) {
-    //            System.out.println("No hay libros registrados aún.");
-    //        } else {
-    //            System.out.println("\n--- LISTA DE LIBROS REGISTRADOS ---");
-    //            // Usamos el formato toString() de la entidad Book
-    //            books.forEach(System.out::println);
-    //        }
-    //    }
-
     private void listRegisteredBooks() {
-        var books = repository.findAll();
+        var books = bookRepository.findAll();
 
         if (books.isEmpty()) {
             System.out.println("\n[!] No hay libros registrados en la base de datos.");
@@ -121,14 +126,12 @@ public class Menu {
             System.out.println("\n" + "─".repeat(90));
             System.out.println("                              LISTA DE LIBROS REGISTRADOS");
             System.out.println("─".repeat(90));
-            System.out.printf("%-3s │ %-40s │ %-30s │ %-10s%n", "Nº", "TÍTULO", "AUTOR", "IDIOMA");
+            System.out.printf("%-4s │ %-40s │ %-30s │ %-10s%n", "Nº", "TÍTULO", "AUTOR", "IDIOMA");
             System.out.println("-".repeat(90));
 
-            // books.forEach(b -> System.out.printf("%-40.40s │ %-30.30s │ %-10s%n", b.getTitle(), b.getAuthor(), b.getLanguage()));
-            // System.out.println("─".repeat(84) + "\n");
             for (int i = 0; i < books.size(); i++) {
                 var b = books.get(i);
-                System.out.printf("[%d] │ %-40.40s │ %-30.30s │ %-10s%n", (i + 1), b.getTitle(), b.getAuthor(), b.getLanguage());
+                System.out.printf("[%d] │ %-40.40s │ %-30.30s │ %-10s%n", (i + 1), b.getTitle(), (b.getAuthor() != null ? b.getAuthor().getName() : "Autor Desconocido"), b.getLanguage());
             }
 
             System.out.println("─".repeat(90));
@@ -137,7 +140,35 @@ public class Menu {
         }
     }
 
-    private void listRegisteredAuthors() { }
+    private void listRegisteredAuthors() {
+        var authors = authorRepository.findAll();
+
+        if (authors.isEmpty()) {
+            System.out.println("\n[!] No hay autores registrados.");
+        } else {
+            System.out.println("\n" + "─".repeat(100));
+            System.out.println("                              LISTA DE AUTORES REGISTRADOS");
+            System.out.println("─".repeat(100));
+
+            authors.forEach(a -> {
+                System.out.println("Autor: " + a.getName());
+                System.out.println("Fecha de nacimiento: " + (a.getBirthYear() != null ? a.getBirthYear() : "N/A"));
+                System.out.println("Fecha de fallecimiento: " + (a.getDeathYear() != null ? a.getDeathYear() : "N/A"));
+
+                // Obtenemos la lista de títulos
+                String libros = a.getBooks().stream()
+                        .map(Book::getTitle)
+                        .collect(java.util.stream.Collectors.joining(" │ "));
+
+                System.out.println("Libros: [ " + libros + " ]");
+                System.out.println("-".repeat(80));
+            });
+
+            System.out.printf("TOTAL DE AUTORES: %d%n", authors.size());
+            System.out.println("─".repeat(100) + "\n");
+        }
+    }
+
     private void listLivingAuthorsByYear() { }
     private void listBooksByLanguage() { }
 }

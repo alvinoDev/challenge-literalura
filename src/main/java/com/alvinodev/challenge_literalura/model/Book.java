@@ -14,7 +14,12 @@ public class Book {
 
     @Column(unique = true)
     private String title;
-    private String author;
+
+    // private String author;
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "author_id") // Esto crea la Clave Foránea en la tabla books
+    private Author author;
+
     private String language;
     private Double downloadCount;
 
@@ -22,10 +27,6 @@ public class Book {
 
     public Book(BookDataDTO bookDataDTO) {
         this.title = bookDataDTO.title();
-        // Transformamos la lista de autores a un solo String
-        this.author = bookDataDTO.author().stream()
-                .map(a -> a.name())
-                .collect(Collectors.joining(", "));
         // Tomamos el primer idioma de la lista
         this.language = bookDataDTO.languages().isEmpty() ? "Unknown" : bookDataDTO.languages().get(0);
         this.downloadCount = bookDataDTO.download_count();
@@ -47,11 +48,11 @@ public class Book {
         this.title = title;
     }
 
-    public String getAuthor() {
+    public Author getAuthor() {
         return author;
     }
 
-    public void setAuthor(String author) {
+    public void setAuthor(Author author) {
         this.author = author;
     }
 
@@ -82,6 +83,6 @@ public class Book {
             │ Idioma: %s
             │ Descargas: %.0f
             └─────────────────────────────────────────────
-            """, title, author, language, downloadCount);
+            """, title, (author != null ? author.getName() : "Desconocido"), language, downloadCount);
     }
 }
