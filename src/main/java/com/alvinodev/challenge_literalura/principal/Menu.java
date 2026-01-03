@@ -41,6 +41,7 @@ public class Menu {
             5 - Listar libros por idioma
             6 - Generar estadísticas
             7 - Top 10 libros más descargados
+            8 - Buscar autor por nombre
             0 - Salir
             **********************************************
             Por favor, elije una opcion:
@@ -71,6 +72,9 @@ public class Menu {
                     break;
                 case 7:
                     listTop10();
+                    break;
+                case 8:
+                    searchAuthorByName();
                     break;
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -255,12 +259,23 @@ public class Menu {
 
     private void listTop10(){
         var topBooks = bookRepository.findTop10ByOrderByDownloadCountDesc();
-        // System.out.println("\n--- TOP 10 LIBROS MÁS DESCARGADOS ---");
         System.out.println("\n" + "─".repeat(64));
         System.out.println("              TOP 10 LIBROS MÁS DESCARGADOS");
         System.out.println("─".repeat(64));
 
         topBooks.forEach(b -> System.out.printf("%-40.40s | Descargas: %.0f%n", b.getTitle(), b.getDownloadCount()));
         System.out.println("─".repeat(64) + "\n");
+    }
+
+    private void searchAuthorByName() {
+        System.out.println("Ingrese el nombre del autor que desea buscar:");
+        var name = keyboardInput.nextLine();
+        var authors = authorRepository.findByName(name);
+
+        if (authors.isEmpty()) {
+            System.out.println("No se encontró ningún autor con ese nombre.");
+        } else {
+            authors.forEach(System.out::println); // Usará el formato de "Ficha" que creamos antes
+        }
     }
 }
