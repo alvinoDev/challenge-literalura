@@ -112,7 +112,7 @@ public class Menu {
                 System.out.println("\n[+] Libro y Autor registrado con éxito:");
                 System.out.println(book);
             } else {
-                System.out.println("Libro no encontrado.");
+                System.out.println("\n[!] Libro no encontrado.");
             }
         }
     }
@@ -192,5 +192,34 @@ public class Menu {
         }
     }
 
-    private void listBooksByLanguage() { }
+    private void listBooksByLanguage() {
+        System.out.println("""
+            Ingrese el código del idioma para buscar los libros:
+            [es] - Español
+            [en] - Inglés
+            [fr] - Francés
+            [pt] - Portugués
+            """);
+        String languageCode = keyboardInput.nextLine().toLowerCase();
+
+        var books = bookRepository.findByLanguage(languageCode);
+
+        if (books.isEmpty()) {
+            System.out.println("\n[!] No se encontraron libros en el idioma: " + languageCode);
+        } else {
+            System.out.println("\n" + "─".repeat(90));
+            System.out.println("                               LIBROS EN IDIOMA [" + languageCode.toUpperCase() + "]");
+            System.out.println("─".repeat(90));
+            System.out.printf("%-3s │ %-40s │ %-30s │ %-10s%n", "Nº", "TÍTULO", "AUTOR", "DESCARGAS");
+            System.out.println("-".repeat(90));
+
+            for (int i = 0; i < books.size(); i++) {
+                var b = books.get(i);
+                String authorName = (b.getAuthor() != null) ? b.getAuthor().getName() : "Desconocido";
+                System.out.printf("[%d] │ %-40.40s │ %-30.30s │ %-10.0f%n",
+                        (i + 1), b.getTitle(), authorName, b.getDownloadCount());
+            }
+            System.out.println("─".repeat(90) + "\n");
+        }
+    }
 }
