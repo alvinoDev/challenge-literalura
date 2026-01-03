@@ -84,7 +84,7 @@ public class Menu {
         String title = keyboardInput.nextLine();
 
         // Verificar si ya existe en la BD para no consumir la API innecesariamente
-        var bookOptional = bookRepository.findByTitleContainsIgnoreCase(title);
+        var bookOptional = bookRepository.findFirstByTitleContainsIgnoreCase(title);
         if(bookOptional.isPresent()) {
             System.out.println("\n[!] El libro ya se encuentra registrado en la base de datos:");
             System.out.println(bookOptional.get());
@@ -97,7 +97,7 @@ public class Menu {
                 // Extraemos los datos del autor desde el DTO
                 AuthorDataDTO authorDTO = data.author().get(0);
                 // Buscamos si el autor ya existe en nuestra BD para no duplicarlo
-                Author author = authorRepository.findByNameContainsIgnoreCase(authorDTO.name())
+                Author author = authorRepository.findFirstByNameContainsIgnoreCase(authorDTO.name())
                         .orElseGet(() -> {
                             // Si no existe, lo creamos Y LO GUARDAMOS explícitamente
                             Author newAuthor = new Author(authorDTO);

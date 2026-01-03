@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
     // Buscamos por título ignorando mayúsculas para evitar duplicados
-    Optional<Book> findByTitleContainsIgnoreCase(String title);
+    Optional<Book> findFirstByTitleContainsIgnoreCase(String title); // Consulta usando convenciones de JPA
 }

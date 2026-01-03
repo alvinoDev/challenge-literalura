@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface AuthorRepository extends JpaRepository<Author, Long> {
     // Buscamos por name ignorando mayúsculas para evitar duplicados
-    Optional<Author> findByNameContainsIgnoreCase(String name);
+    Optional<Author> findFirstByNameContainsIgnoreCase(String name);
 
     List<Author> findByBirthYearLessThanEqualAndDeathYearGreaterThanEqual(Integer birthYear, Integer deathYear);
 }
