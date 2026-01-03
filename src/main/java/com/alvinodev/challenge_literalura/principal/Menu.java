@@ -40,6 +40,7 @@ public class Menu {
             4 - Listar autores vivos en un determinado año
             5 - Listar libros por idioma
             6 - Generar estadísticas
+            7 - Top 10 libros más descargados
             0 - Salir
             **********************************************
             Por favor, elije una opcion:
@@ -67,6 +68,9 @@ public class Menu {
                     break;
                 case 6:
                     displayStatistics();
+                    break;
+                case 7:
+                    listTop10();
                     break;
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -247,5 +251,16 @@ public class Menu {
         System.out.println(".".repeat(40));
         System.out.printf("TOTAL DE REGISTROS EVALUADOS: %d%n", stats.getCount());
         System.out.println("─".repeat(40) + "\n");
+    }
+
+    private void listTop10(){
+        var topBooks = bookRepository.findTop10ByOrderByDownloadCountDesc();
+        // System.out.println("\n--- TOP 10 LIBROS MÁS DESCARGADOS ---");
+        System.out.println("\n" + "─".repeat(64));
+        System.out.println("              TOP 10 LIBROS MÁS DESCARGADOS");
+        System.out.println("─".repeat(64));
+
+        topBooks.forEach(b -> System.out.printf("%-40.40s | Descargas: %.0f%n", b.getTitle(), b.getDownloadCount()));
+        System.out.println("─".repeat(64) + "\n");
     }
 }
