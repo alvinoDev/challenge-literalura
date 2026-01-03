@@ -134,7 +134,7 @@ public class Menu {
                 System.out.printf("[%d] │ %-40.40s │ %-30.30s │ %-10s%n", (i + 1), b.getTitle(), (b.getAuthor() != null ? b.getAuthor().getName() : "Autor Desconocido"), b.getLanguage());
             }
 
-            System.out.println("─".repeat(90));
+            System.out.println(".".repeat(90));
             System.out.printf("TOTAL DE LIBROS: %d%n", books.size());
             System.out.println("─".repeat(90) + "\n");
         }
@@ -169,6 +169,28 @@ public class Menu {
         }
     }
 
-    private void listLivingAuthorsByYear() { }
+    private void listLivingAuthorsByYear() {
+        System.out.print("Ingrese el año para consultar autores vivos: ");
+        var year = keyboardInput.nextInt();
+        keyboardInput.nextLine();
+
+        var authors = authorRepository.findByBirthYearLessThanEqualAndDeathYearGreaterThanEqual(year, year);
+
+        if (authors.isEmpty()) {
+            System.out.println("\n[!] No se encontraron autores vivos en el año " + year);
+        } else {
+            System.out.println("\n" + "─".repeat(60));
+            System.out.println("                AUTORES VIVOS EN EL AÑO " + year);
+            System.out.println("─".repeat(60));
+
+            authors.forEach(a -> System.out.printf("• %s [%s - %s]%n",
+                    a.getName(), a.getBirthYear(), a.getDeathYear()));
+
+            System.out.println(".".repeat(60));
+            System.out.printf("TOTAL DE AUTORES VIVOS: %d%n", authors.size());
+            System.out.println("─".repeat(60) + "\n");
+        }
+    }
+
     private void listBooksByLanguage() { }
 }
