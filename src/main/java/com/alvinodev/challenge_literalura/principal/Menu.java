@@ -10,6 +10,7 @@ import com.alvinodev.challenge_literalura.repository.BookRepository;
 import com.alvinodev.challenge_literalura.service.ApiConsumer;
 import com.alvinodev.challenge_literalura.service.DataConverter;
 
+import java.util.DoubleSummaryStatistics;
 import java.util.Scanner;
 
 public class Menu {
@@ -38,6 +39,7 @@ public class Menu {
             3 - Listar autores registrados
             4 - Listar autores vivos en un determinado año
             5 - Listar libros por idioma
+            6 - Generar estadísticas
             0 - Salir
             **********************************************
             Por favor, elije una opcion:
@@ -62,6 +64,9 @@ public class Menu {
                     break;
                 case 5:
                     listBooksByLanguage();
+                    break;
+                case 6:
+                    displayStatistics();
                     break;
                 case 0:
                     System.out.println("Cerrando la aplicación...");
@@ -221,5 +226,26 @@ public class Menu {
             }
             System.out.println("─".repeat(90) + "\n");
         }
+    }
+
+    // RETOS EXTRA DEL CHALLENGE
+    private void displayStatistics(){
+        var books = bookRepository.findAll();
+        if(books.isEmpty()) {
+            System.out.println("No hay datos para generar estadísticas.");
+            return;
+        }
+
+        DoubleSummaryStatistics stats = books.stream().mapToDouble(Book::getDownloadCount).summaryStatistics();
+
+        System.out.println("\n" + "─".repeat(40));
+        System.out.println("       ESTADÍSTICAS DE DESCARGAS");
+        System.out.println("─".repeat(40));
+        System.out.printf("Media: %.2f%n", stats.getAverage());
+        System.out.printf("Máxima: %.0f%n", stats.getMax());
+        System.out.printf("Mínima: %.0f%n", stats.getMin());
+        System.out.println(".".repeat(40));
+        System.out.printf("TOTAL DE REGISTROS EVALUADOS: %d%n", stats.getCount());
+        System.out.println("─".repeat(40) + "\n");
     }
 }
